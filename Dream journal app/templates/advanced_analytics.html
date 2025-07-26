@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dream Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 80%;
+            margin: 50px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Dream Analytics</h1>
+        <div class="chart-container">
+            <h2>Mood Distribution</h2>
+            <canvas id="moodChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Most Common Tags</h2>
+            <canvas id="tagChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Most Common Words</h2>
+            <canvas id="wordChart"></canvas>
+        </div>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    // Mood Chart
+                    const moodCtx = document.getElementById('moodChart').getContext('2d');
+                    new Chart(moodCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(data.mood_distribution),
+                            datasets: [{
+                                label: 'Moods',
+                                data: Object.values(data.mood_distribution),
+                                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                            }]
+                        }
+                    });
+
+                    // Tag Chart
+                    const tagCtx = document.getElementById('tagChart').getContext('2d');
+                    new Chart(tagCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(data.tag_cloud),
+                            datasets: [{
+                                label: 'Tags',
+                                data: Object.values(data.tag_cloud),
+                                backgroundColor: '#36A2EB'
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    // Word Chart
+                    const wordCtx = document.getElementById('wordChart').getContext('2d');
+                    new Chart(wordCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.common_words.map(item => item[0]),
+                            datasets: [{
+                                label: 'Words',
+                                data: data.common_words.map(item => item[1]),
+                                backgroundColor: '#FF6384'
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
